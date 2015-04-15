@@ -8,7 +8,8 @@
 /**
  */
 
-if (! defined('LIBDIR'))
-	define('LIBDIR',sprintf('%s/',realpath('../lib/')));
-require_once LIBDIR.'common.php';
+if (!defined('LIBDIR')) {
+    define('LIBDIR', sprintf('%s/', realpath('../lib/')));
+}
+require_once LIBDIR . 'common.php';
 ?>

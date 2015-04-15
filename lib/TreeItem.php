@@ -12,301 +12,367 @@
  * @package phpLDAPadmin
  * @subpackage Tree
  */
-class TreeItem {
-	# This entry's DN
-	protected $dn;
-	# The server this entry belongs to.
-	private $server_id;
-	# The objectclasses in LDAP, used to deterimine the icon and template
-	protected $objectclasses = array();
-	# Is this a base entry?
-	private $base_entry = false;
-	# Array of dn - the children
-	private $children = array();
-	# An icon file path
-	protected $icon;
-	# Is the entry a leaf?
-	private $leaf = false;
-	# Is the node open?
-	private $open = false;
-	# Is the size of children limited?
-	private $size_limited = true;
-	# Last template used to edit this entry
-	private $template = null;
-	# Do we need to sort the children
-	private $childsort = true;
-	# Are we reading the children
-	private $reading_children = false;
+class TreeItem
+{
 
-	public function __construct($server_id,$dn) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+    /**
+     * @var string This entry's DN
+     */
+    protected $dn;
+    # The server this entry belongs to.
+    private $server_id;
+    # The objectclasses in LDAP, used to deterimine the icon and template
+    protected $objectclasses = array();
+    # Is this a base entry?
+    private $base_entry = false;
+    # Array of dn - the children
+    private $children = array();
+    # An icon file path
+    protected $icon;
+    # Is the entry a leaf?
+    private $leaf = false;
+    # Is the node open?
+    private $open = false;
+    # Is the size of children limited?
+    private $size_limited = true;
+    # Last template used to edit this entry
+    private $template = null;
+    # Do we need to sort the children
+    private $childsort = true;
+    # Are we reading the children
+    private $reading_children = false;
 
-		$this->server_id = $server_id;
-		$this->dn = $dn;
-	}
+    /**
+     * @param $server_id
+     * @param string $dn
+     */
+    public function __construct($server_id, $dn)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Get the DN of this tree item.
-	 *
-	 * @return DN The DN of this item.
-	 */
-	public function getDN() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->dn);
+        $this->server_id = $server_id;
+        $this->dn = $dn;
+    }
 
-		return $this->dn;
-	}
+    /**
+     * Get the DN of this tree item.
+     *
+     * @return string The DN of this item.
+     */
+    public function getDN()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->dn);
+        }
 
-	public function getDNEncode() {
-		return urlencode(preg_replace('/%([0-9a-fA-F]+)/',"%25\\1",$this->dn));
-	}
+        return $this->dn;
+    }
 
-	/**
-	 * Get the RDN of this tree items DN.
-	 *
-	 * @return RDN The RDN of this items DN.
-	 */
-	public function getRDN() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+    public function getDNEncode()
+    {
+        return urlencode(preg_replace('/%([0-9a-fA-F]+)/', "%25\\1", $this->dn));
+    }
 
-		return get_rdn($this->getDn(),0,true);
-	}
+    /**
+     * Get the RDN of this tree items DN.
+     *
+     * @return string The RDN of this items DN.
+     */
+    public function getRDN()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Set this item as a LDAP base DN item.
-	 */
-	public function setBase() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        return get_rdn($this->getDn(), 0, true);
+    }
 
-		$this->base_entry = true;
-	}
+    /**
+     * Set this item as a LDAP base DN item.
+     */
+    public function setBase()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Return if this item is a base DN item.
-	 */
-	public function isBaseDN() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->base_entry);
+        $this->base_entry = true;
+    }
 
-		return $this->base_entry;
-	}
+    /**
+     * Return if this item is a base DN item.
+     */
+    public function isBaseDN()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->base_entry);
+        }
 
-	public function setObjectClasses($oc) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->base_entry;
+    }
 
-		$this->objectclasses = $oc;
-	}
+    public function setObjectClasses($oc)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	public function getObjectClasses() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->objectclasses);
+        $this->objectclasses = $oc;
+    }
 
-		return $this->objectclasses;
-	}
+    public function getObjectClasses()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->objectclasses);
+        }
 
-	public function isInLDAP() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->objectclasses;
+    }
 
-		return count($this->objectclasses) ? true : false;
-	}
+    public function isInLDAP()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Returns null if the children have never be defined
-	 * or an array of the dn of the children
-	 */
-	public function getChildren() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->children);
+        return count($this->objectclasses) ? true : false;
+    }
 
-		if ($this->childsort && ! $this->reading_children) {
-			usort($this->children,'pla_compare_dns');
-			$this->childsort = false;
-		}
+    /**
+     * Returns null if the children have never be defined
+     * or an array of the dn of the children
+     *
+     * @return string[]
+     */
+    public function getChildren()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->children);
+        }
 
-		return $this->children;
-	}
+        if ($this->childsort && !$this->reading_children) {
+            usort($this->children, 'pla_compare_dns');
+            $this->childsort = false;
+        }
 
-	public function readingChildren($bool) {
-		$this->reading_children = $bool;
-	}
+        return $this->children;
+    }
 
-	/**
-	 * Do the children require resorting
-	 */
-	public function isChildSorted() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->childsort);
+    public function readingChildren($bool)
+    {
+        $this->reading_children = $bool;
+    }
 
-		return $this->childsort;
-	}
+    /**
+     * Do the children require resorting
+     */
+    public function isChildSorted()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->childsort);
+        }
 
-	/**
-	 * Mark the children as sorted
-	 */
-	public function childSorted() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->childsort;
+    }
 
-		$this->childsort = false;
-	}
+    /**
+     * Mark the children as sorted
+     */
+    public function childSorted()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Add a child to this DN entry.
-	 *
-	 * @param DN The DN to add.
-	 */
-	public function addChild($dn) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->childsort = false;
+    }
 
-		if (in_array($dn,$this->children))
-			return;
+    /**
+     * Add a child to this DN entry.
+     *
+     * @param DN The DN to add.
+     */
+    public function addChild($dn)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-		array_push($this->children,$dn);
-		$this->childsort = true;
-	}
+        if (in_array($dn, $this->children)) {
+            return;
+        }
 
-	/**
-	 * Delete a child from this DN entry.
-	 *
-	 * @param DN The DN to add.
-	 */
-	public function delChild($dn) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        array_push($this->children, $dn);
+        $this->childsort = true;
+    }
 
-		if ($this->children) {
-			# If the parent hasnt been opened in the tree, then there wont be any children.
-			$index = array_search($dn,$this->children);
+    /**
+     * Delete a child from this DN entry.
+     *
+     * @param DN The DN to add.
+     */
+    public function delChild($dn)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-			if ($index !== false)
-				unset($this->children[$index]);
-		}
-	}
+        if ($this->children) {
+            # If the parent hasnt been opened in the tree, then there wont be any children.
+            $index = array_search($dn, $this->children);
 
-	/**
-	 * Rename this DN.
-	 *
-	 * @param DN The DN to rename to.
-	 */
-	public function rename($dn) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+            if ($index !== false) {
+                unset($this->children[$index]);
+            }
+        }
+    }
 
-		$this->dn = $dn;
-	}
+    /**
+     * Rename this DN.
+     *
+     * @param DN The DN to rename to.
+     */
+    public function rename($dn)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Return if this item has been opened.
-	 */
-	public function isOpened() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->open);
+        $this->dn = $dn;
+    }
 
-		return $this->open;
-	}
+    /**
+     * Return if this item has been opened.
+     */
+    public function isOpened()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->open);
+        }
 
-	/**
-	 * Mark this node as closed.
-	 */
-	public function close() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->open;
+    }
 
-		$this->open = false;
-	}
+    /**
+     * Mark this node as closed.
+     */
+    public function close()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Opens the node ; the children of the node must have been defined
-	 */
-	public function open() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->open = false;
+    }
 
-		$this->open = true;
-	}
+    /**
+     * Opens the node ; the children of the node must have been defined
+     */
+    public function open()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Mark this node as a leaf.
-	 */
-	public function setLeaf() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->open = true;
+    }
 
-		$this->leaf = true;
-	}
+    /**
+     * Mark this node as a leaf.
+     */
+    public function setLeaf()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Return if this node is a leaf.
-	 */
-	public function isLeaf() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->leaf);
+        $this->leaf = true;
+    }
 
-		return $this->leaf;
-	}
+    /**
+     * Return if this node is a leaf.
+     */
+    public function isLeaf()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->leaf);
+        }
 
-	/**
-	 * Returns the path of the icon file used to represent this node ;
-	 * If the icon hasnt been set, it will call get_icon()
-	 */
-	public function getIcon() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs,$this->icon);
+        return $this->leaf;
+    }
 
-		if (! $this->icon)
-			$this->icon = get_icon($this->server_id,$this->dn,$this->objectclasses);
+    /**
+     * Returns the path of the icon file used to represent this node ;
+     * If the icon hasnt been set, it will call get_icon()
+     */
+    public function getIcon()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs, $this->icon);
+        }
 
-		return $this->icon;
-	}
+        if (!$this->icon) {
+            $this->icon = get_icon($this->server_id, $this->dn, $this->objectclasses);
+        }
 
-	/**
-	 * Mark this node as a size limited (it wont have all its children).
-	 */
-	public function setSizeLimited() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->icon;
+    }
 
-		$this->size_limited = true;
-	}
+    /**
+     * Mark this node as a size limited (it wont have all its children).
+     */
+    public function setSizeLimited()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Clear the size limited flag.
-	 */
-	public function unsetSizeLimited() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->size_limited = true;
+    }
 
-		$this->size_limited = false;
-	}
+    /**
+     * Clear the size limited flag.
+     */
+    public function unsetSizeLimited()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	/**
-	 * Return if this node has hit an LDAP size limit (and thus doesnt have all its children).
-	 */
-	public function isSizeLimited() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->size_limited = false;
+    }
 
-		return $this->size_limited;
-	}
+    /**
+     * Return if this node has hit an LDAP size limit (and thus doesnt have all its children).
+     */
+    public function isSizeLimited()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	public function setTemplate($template) {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,1,__FILE__,__LINE__,__METHOD__,$fargs);
+        return $this->size_limited;
+    }
 
-		$this->template = $template;
-	}
+    public function setTemplate($template)
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 1, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
 
-	public function getTemplate() {
-		if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-			debug_log('Entered (%%)',33,0,__FILE__,__LINE__,__METHOD__,$fargs);
+        $this->template = $template;
+    }
 
-		return $this->template;
-	}
+    public function getTemplate()
+    {
+        if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+            debug_log('Entered (%%)', 33, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+        }
+
+        return $this->template;
+    }
 }
+
 ?>

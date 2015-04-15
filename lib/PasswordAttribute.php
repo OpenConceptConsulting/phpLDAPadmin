@@ -12,6 +12,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class PasswordAttribute extends Attribute {
+class PasswordAttribute extends Attribute
+{
 }
+
 ?>

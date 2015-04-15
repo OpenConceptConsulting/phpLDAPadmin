@@ -17,6 +17,8 @@
  * @package phpLDAPadmin
  * @subpackage Queries
  */
-class Queries extends xmlTemplates {
+class Queries extends xmlTemplates
+{
 }
+
 ?>

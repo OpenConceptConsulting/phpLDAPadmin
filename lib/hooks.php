@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  *
- * @author Benjamin Drieu <benjamin.drieu@fr.alcove.com> and AlcÃ?ve
+ * @author Benjamin Drieu <benjamin.drieu@fr.alcove.com> and Alcï¿½?ve
  * @package phpLDAPadmin
  */
 
@@ -31,11 +31,13 @@
  * @return -1 if priority of first element is smaller than second
  * element priority. 1 otherwise.
  */
-function sort_array_by_priority($a,$b) {
-	if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-		debug_log('Entered (%%)',257,0,__FILE__,__LINE__,__METHOD__,$fargs);
+function sort_array_by_priority($a, $b)
+{
+    if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+        debug_log('Entered (%%)', 257, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+    }
 
-	return (($a['priority'] < $b['priority']) ? -1 : 1 );
+    return (($a['priority'] < $b['priority']) ? -1 : 1);
 }
 
 /**
@@ -49,153 +51,207 @@ function sort_array_by_priority($a,$b) {
  *
  * @return true if all procedures returned true, false otherwise.
  */
-function run_hook($hook_name,$args) {
-	if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-		debug_log('Entered (%%)',257,0,__FILE__,__LINE__,__METHOD__,$fargs);
+function run_hook($hook_name, $args)
+{
+    if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+        debug_log('Entered (%%)', 257, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+    }
 
-	$hooks = isset($_SESSION[APPCONFIG]) ? $_SESSION[APPCONFIG]->hooks : array();
+    $hooks = isset($_SESSION[APPCONFIG]) ? $_SESSION[APPCONFIG]->hooks : array();
 
-	if (! count($hooks) || ! array_key_exists($hook_name,$hooks)) {
-		if (DEBUG_ENABLED)
-			debug_log('Returning, HOOK not defined (%s)',257,0,__FILE__,__LINE__,__METHOD__,$hook_name);
+    if (!count($hooks) || !array_key_exists($hook_name, $hooks)) {
+        if (DEBUG_ENABLED) {
+            debug_log('Returning, HOOK not defined (%s)', 257, 0, __FILE__, __LINE__, __METHOD__, $hook_name);
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	$rollbacks = array();
-	reset($hooks[$hook_name]);
+    $rollbacks = array();
+    reset($hooks[$hook_name]);
 
-	/* Execution of procedures attached is done using a numeric order
-	 * since all procedures have been attached to the hook with a
-	 * numerical weight. */
-	while (list($key,$hook) = each($hooks[$hook_name])) {
-		if (DEBUG_ENABLED)
-			debug_log('Calling HOOK Function (%s)(%s)',257,0,__FILE__,__LINE__,__METHOD__,
-				$hook['hook_function'],$args);
+    /* Execution of procedures attached is done using a numeric order
+     * since all procedures have been attached to the hook with a
+     * numerical weight. */
+    while (list($key, $hook) = each($hooks[$hook_name])) {
+        if (DEBUG_ENABLED) {
+            debug_log(
+                'Calling HOOK Function (%s)(%s)',
+                257,
+                0,
+                __FILE__,
+                __LINE__,
+                __METHOD__,
+                $hook['hook_function'],
+                $args
+            );
+        }
 
-		array_push($rollbacks,$hook['rollback_function']);
+        array_push($rollbacks, $hook['rollback_function']);
 
-		$result = call_user_func_array($hook['hook_function'],$args);
-		if (DEBUG_ENABLED)
-			debug_log('Called HOOK Function (%s)',257,0,__FILE__,__LINE__,__METHOD__,
-				$hook['hook_function']);
+        $result = call_user_func_array($hook['hook_function'], $args);
+        if (DEBUG_ENABLED) {
+            debug_log(
+                'Called HOOK Function (%s)',
+                257,
+                0,
+                __FILE__,
+                __LINE__,
+                __METHOD__,
+                $hook['hook_function']
+            );
+        }
 
-		/* If a procedure fails (identified by a false return), its optional rollback is executed with
-		 * the same arguments. After that, all rollbacks from
-		 * previously executed procedures are executed in the reverse
-		 * order. */
-		if (! is_null($result) && $result == false) {
-			if (DEBUG_ENABLED)
-				debug_log('HOOK Function [%s] return (%s)',257,0,__FILE__,__LINE__,__METHOD__,
-					$hook['hook_function'],$result);
+        /* If a procedure fails (identified by a false return), its optional rollback is executed with
+         * the same arguments. After that, all rollbacks from
+         * previously executed procedures are executed in the reverse
+         * order. */
+        if (!is_null($result) && $result == false) {
+            if (DEBUG_ENABLED) {
+                debug_log(
+                    'HOOK Function [%s] return (%s)',
+                    257,
+                    0,
+                    __FILE__,
+                    __LINE__,
+                    __METHOD__,
+                    $hook['hook_function'],
+                    $result
+                );
+            }
 
-			while ($rollbacks) {
-				$rollback = array_pop($rollbacks);
+            while ($rollbacks) {
+                $rollback = array_pop($rollbacks);
 
-				if ($rollback != false) {
-					if (DEBUG_ENABLED)
-						debug_log('HOOK Function Rollback (%s)',257,0,__FILE__,__LINE__,__METHOD__,
-							$rollback);
+                if ($rollback != false) {
+                    if (DEBUG_ENABLED) {
+                        debug_log(
+                            'HOOK Function Rollback (%s)',
+                            257,
+                            0,
+                            __FILE__,
+                            __LINE__,
+                            __METHOD__,
+                            $rollback
+                        );
+                    }
 
-					call_user_func_array($rollback,$args);
-				}
-			}
+                    call_user_func_array($rollback, $args);
+                }
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 /**
  * Adds a procedure to a hook for later execution.
  *
  * @param hook_name Name of the hook.
- * @param hook_function	Name of the php function called upon hook trigger.
+ * @param hook_function    Name of the php function called upon hook trigger.
  * @param priority Numeric priority. Lowest means procedure will be executed before.
- * @param rollback_function	Name of the php rollback function called upon failure.
+ * @param rollback_function    Name of the php rollback function called upon failure.
  */
-function add_hook($hook_name,$hook_function,$priority=0,$rollback_function=null) {
-	if (defined('DEBUG_ENABLED') && DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-		debug_log('Entered (%%)',257,0,__FILE__,__LINE__,__METHOD__,$fargs);
+function add_hook($hook_name, $hook_function, $priority = 0, $rollback_function = null)
+{
+    if (defined('DEBUG_ENABLED') && DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+        debug_log('Entered (%%)', 257, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+    }
 
-	# First, see if the hook function exists.
-	if (! function_exists($hook_function)) {
-		system_message(array(
-			'title'=>_('Hook function does not exist'),
-			'body'=>sprintf('Hook name: %s<br/>Hook function: %s',$hook_name,$hook_function),
-			'type'=>'warn'));
+    # First, see if the hook function exists.
+    if (!function_exists($hook_function)) {
+        system_message(
+            array(
+                'title' => _('Hook function does not exist'),
+                'body' => sprintf('Hook name: %s<br/>Hook function: %s', $hook_name, $hook_function),
+                'type' => 'warn'
+            )
+        );
 
-		return;
-	}
+        return;
+    }
 
-	if (! array_key_exists($hook_name,$_SESSION[APPCONFIG]->hooks))
-		$_SESSION[APPCONFIG]->hooks[$hook_name] = array();
+    if (!array_key_exists($hook_name, $_SESSION[APPCONFIG]->hooks)) {
+        $_SESSION[APPCONFIG]->hooks[$hook_name] = array();
+    }
 
-	remove_hook($hook_name,$hook_function,-1,null);
+    remove_hook($hook_name, $hook_function, -1, null);
 
-	array_push($_SESSION[APPCONFIG]->hooks[$hook_name],array(
-		'priority' => $priority,
-		'hook_function' => $hook_function,
-		'rollback_function' => $rollback_function));
+    array_push(
+        $_SESSION[APPCONFIG]->hooks[$hook_name],
+        array(
+            'priority' => $priority,
+            'hook_function' => $hook_function,
+            'rollback_function' => $rollback_function
+        )
+    );
 
-	uasort($_SESSION[APPCONFIG]->hooks[$hook_name],'sort_array_by_priority');
+    uasort($_SESSION[APPCONFIG]->hooks[$hook_name], 'sort_array_by_priority');
 }
 
 /**
  * Removes a procedure from a hook, based on a filter.
  *
- * @param hook_name	Name of the hook.
+ * @param hook_name    Name of the hook.
  * @param priority Numeric priority. If set, all procedures of that priority will be removed.
  * @param hook_function Name of the procedure function. If set, all procedures that call this function will be removed.
- * @param rollback_function	Name of the php rollback function called upon failure. If set, all
- *			procedures that call this function as a rollback will be removed.
+ * @param rollback_function    Name of the php rollback function called upon failure. If set, all
+ *            procedures that call this function as a rollback will be removed.
  */
-function remove_hook($hook_name,$hook_function,$priority,$rollback_function) {
-	if (defined('DEBUG_ENABLED') && DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-		debug_log('Entered (%%)',257,0,__FILE__,__LINE__,__METHOD__,$fargs);
+function remove_hook($hook_name, $hook_function, $priority, $rollback_function)
+{
+    if (defined('DEBUG_ENABLED') && DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+        debug_log('Entered (%%)', 257, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+    }
 
-	if (array_key_exists($hook_name,$_SESSION[APPCONFIG]->hooks)) {
-		reset($_SESSION[APPCONFIG]->hooks[$hook_name]);
+    if (array_key_exists($hook_name, $_SESSION[APPCONFIG]->hooks)) {
+        reset($_SESSION[APPCONFIG]->hooks[$hook_name]);
 
-		while (list($key,$hook) = each($_SESSION[APPCONFIG]->hooks[$hook_name])) {
-			if (($priority >= 0 && $priority == $hook['priority']) ||
-				($hook_function && $hook_function == $hook['hook_function']) ||
-				($rollback_function && $rollback_function == $hook['rollback_function'])) {
+        while (list($key, $hook) = each($_SESSION[APPCONFIG]->hooks[$hook_name])) {
+            if (($priority >= 0 && $priority == $hook['priority']) ||
+                ($hook_function && $hook_function == $hook['hook_function']) ||
+                ($rollback_function && $rollback_function == $hook['rollback_function'])
+            ) {
 
-				unset($_SESSION[APPCONFIG]->hooks[$hook_name][$key]);
-			}
-		}
-	}
+                unset($_SESSION[APPCONFIG]->hooks[$hook_name][$key]);
+            }
+        }
+    }
 }
 
 /**
  * Removes all procedures from a hook.
  *
- * @param hook_name	Name of hook to clear.
+ * @param hook_name    Name of hook to clear.
  */
-function clear_hooks($hook_name) {
-	if (DEBUG_ENABLED && (($fargs=func_get_args())||$fargs='NOARGS'))
-		debug_log('Entered (%%)',257,0,__FILE__,__LINE__,__METHOD__,$fargs);
+function clear_hooks($hook_name)
+{
+    if (DEBUG_ENABLED && (($fargs = func_get_args()) || $fargs = 'NOARGS')) {
+        debug_log('Entered (%%)', 257, 0, __FILE__, __LINE__, __METHOD__, $fargs);
+    }
 
-	if (array_key_exists($hook_name,$_SESSION[APPCONFIG]->hooks))
-		unset($_SESSION[APPCONFIG]->hooks[$hook_name]);
+    if (array_key_exists($hook_name, $_SESSION[APPCONFIG]->hooks)) {
+        unset($_SESSION[APPCONFIG]->hooks[$hook_name]);
+    }
 }
 
 $hooks = array();
 
 # Evaluating user-made hooks
-if (is_dir(HOOKSDIR.'functions')) {
-	$hooks['dir'] = dir(HOOKSDIR.'functions');
+if (is_dir(HOOKSDIR . 'functions')) {
+    $hooks['dir'] = dir(HOOKSDIR . 'functions');
 
-	while ($hooks['file'] = $hooks['dir']->read()) {
-		$script = sprintf('%s/%s/%s',HOOKSDIR,'functions',$hooks['file']);
+    while ($hooks['file'] = $hooks['dir']->read()) {
+        $script = sprintf('%s/%s/%s', HOOKSDIR, 'functions', $hooks['file']);
 
-		if (is_file($script) && preg_match('/php[0-9]?$/',$hooks['file']))
-			require_once $script;
-	}
+        if (is_file($script) && preg_match('/php[0-9]?$/', $hooks['file'])) {
+            require_once $script;
+        }
+    }
 
-	$hooks['dir']->close();
+    $hooks['dir']->close();
 }
 ?>

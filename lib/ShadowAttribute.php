@@ -12,8 +12,10 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class ShadowAttribute extends Attribute {
-	public $shadow_before_today_attrs = array('shadowLastChange','shadowMin');
-	public $shadow_after_today_attrs = array('shadowMax','shadowExpire','shadowWarning','shadowInactive');
+class ShadowAttribute extends Attribute
+{
+    public $shadow_before_today_attrs = array('shadowLastChange', 'shadowMin');
+    public $shadow_after_today_attrs = array('shadowMax', 'shadowExpire', 'shadowWarning', 'shadowInactive');
 }
+
 ?>

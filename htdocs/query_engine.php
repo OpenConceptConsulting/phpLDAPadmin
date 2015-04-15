@@ -11,9 +11,9 @@
  */
 
 require './common.php';
-require LIBDIR.'query_functions.php';
+require LIBDIR . 'query_functions.php';
 
 $request = array();
-$request['page'] = new QueryRender($app['server']->getIndex(),get_request('query','REQUEST',false,null));
+$request['page'] = new QueryRender($app['server']->getIndex(), get_request('query', 'REQUEST', false, null));
 $request['page']->accept();
 ?>

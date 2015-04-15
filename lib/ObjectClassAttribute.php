@@ -12,6 +12,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class ObjectClassAttribute extends Attribute {
+class ObjectClassAttribute extends Attribute
+{
 }
+
 ?>

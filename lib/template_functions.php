@@ -18,6 +18,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class Templates extends xmlTemplates {
+class Templates extends xmlTemplates
+{
 }
+
 ?>

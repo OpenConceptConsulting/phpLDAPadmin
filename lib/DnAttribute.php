@@ -12,6 +12,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class DnAttribute extends Attribute {
+class DnAttribute extends Attribute
+{
 }
+
 ?>

@@ -12,6 +12,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class DateAttribute extends Attribute {
+class DateAttribute extends Attribute
+{
 }
+
 ?>

@@ -12,6 +12,8 @@
  * @package phpLDAPadmin
  * @subpackage Templates
  */
-class JpegAttribute extends BinaryAttribute {
+class JpegAttribute extends BinaryAttribute
+{
 }
+
 ?>

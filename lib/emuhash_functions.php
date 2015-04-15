@@ -26,87 +26,96 @@
 /* Do we have builtin mhash support in this PHP version ?                     */
 /******************************************************************************/
 
-if (! function_exists('mhash') && ! function_exists('mhash_keygen_s2k')) {
-	$emuhash_emu = array();
+if (!function_exists('mhash') && !function_exists('mhash_keygen_s2k')) {
+    $emuhash_emu = array();
 
-	if (! isset($emuhash_emu['openssl']))
-		$emuhash_emu['openssl'] = '/usr/bin/openssl';
+    if (!isset($emuhash_emu['openssl'])) {
+        $emuhash_emu['openssl'] = '/usr/bin/openssl';
+    }
 
-	# Don't create mhash functions if we don't have a working openssl
-	if (! file_exists($emuhash_emu['openssl']))
-		unset($emuhash_emu['openssl']);
+    # Don't create mhash functions if we don't have a working openssl
+    if (!file_exists($emuhash_emu['openssl'])) {
+        unset($emuhash_emu['openssl']);
+    } elseif (function_exists('is_executable') && !is_executable($emuhash_emu['openssl'])) {
+        unset($emuhash_emu['openssl']);
+    } else {
+        if (!isset($emuhash_emu['tmpdir'])) {
+            $emuhash_emu['tmpdir'] = '/tmp';
+        }
 
-	elseif (function_exists('is_executable') && ! is_executable($emuhash_emu['openssl']))
-		unset($emuhash_emu['openssl']);
+        /******************************************************************************/
+        /* Define constants used in the mhash emulation code.                         */
+        /******************************************************************************/
 
-	else {
-		if (! isset($emuhash_emu['tmpdir']))
-			$emuhash_emu['tmpdir'] = '/tmp';
+        define('MHASH_MD5', 'md5');
+        define('MHASH_SHA1', 'sha1');
+        define('MHASH_RIPEMD160', 'rmd160');
 
-/******************************************************************************/
-/* Define constants used in the mhash emulation code.                         */
-/******************************************************************************/
+        /******************************************************************************/
+        /* Functions to emulate parts of php-mash.                                    */
+        /******************************************************************************/
 
-		define('MHASH_MD5','md5');
-		define('MHASH_SHA1','sha1');
-		define('MHASH_RIPEMD160','rmd160');
+        function openssl_hash($openssl_hash_id, $password_clear)
+        {
+            global $emuhash_emu;
 
-/******************************************************************************/
-/* Functions to emulate parts of php-mash.                                    */
-/******************************************************************************/
+            if (PHP_VERSION < 6) {
+                $current_magic_quotes = @get_magic_quotes_runtime();
+                @set_magic_quotes_runtime(0);
+            }
 
-		function openssl_hash($openssl_hash_id,$password_clear) {
-			global $emuhash_emu;
+            $tmpfile = tempnam($emuhash_emu['tmpdir'], 'emuhash');
+            $pwhandle = fopen($tmpfile, 'w');
 
-			if (PHP_VERSION < 6) {
-				$current_magic_quotes = @get_magic_quotes_runtime();
-				@set_magic_quotes_runtime(0);
-			}
+            if (!$pwhandle) {
+                error(
+                    sprintf('Unable to create a temporary file %s to create hashed password', $tmpfile),
+                    'error',
+                    'index.php'
+                );
+            }
 
-			$tmpfile = tempnam($emuhash_emu['tmpdir'],'emuhash');
-			$pwhandle = fopen($tmpfile,'w');
+            fwrite($pwhandle, $password_clear);
+            fclose($pwhandle);
+            $cmd = sprintf('%s %s -binary <%s', $emuhash_emu['openssl'], $openssl_hash_id, $tmpfile);
+            $prog = popen($cmd, 'r');
+            $pass = fread($prog, 1024);
+            pclose($prog);
+            unlink($tmpfile);
 
-			if (! $pwhandle)
-				error(sprintf('Unable to create a temporary file %s to create hashed password',$tmpfile) ,'error','index.php');
+            if (PHP_VERSION < 6) {
+                @set_magic_quotes_runtime($current_magic_quotes);
+            }
 
-			fwrite($pwhandle,$password_clear);
-			fclose($pwhandle);
-			$cmd = sprintf('%s %s -binary <%s',$emuhash_emu['openssl'],$openssl_hash_id,$tmpfile);
-			$prog = popen($cmd,'r');
-			$pass = fread($prog,1024);
-			pclose($prog);
-			unlink($tmpfile);
+            return $pass;
+        }
 
-			if (PHP_VERSION < 6)
-				@set_magic_quotes_runtime($current_magic_quotes);
+        function mhash($hash_id, $password_clear)
+        {
+            switch ($hash_id) {
+                case MHASH_MD5:
+                    $emuhash = openssl_hash(MHASH_MD5, $password_clear);
+                    break;
 
-			return $pass;
-		}
+                case MHASH_SHA1:
+                    $emuhash = openssl_hash(MHASH_SHA1, $password_clear);
+                    break;
 
-		function mhash($hash_id,$password_clear) {
-			switch($hash_id) {
-				case MHASH_MD5:
-					$emuhash = openssl_hash(MHASH_MD5,$password_clear);
-					break;
+                case MHASH_RIPEMD160:
+                    $emuhash = openssl_hash(MHASH_RIPEMD160, $password_clear);
+                    break;
 
-				case MHASH_SHA1:
-					$emuhash = openssl_hash(MHASH_SHA1,$password_clear);
-					break;
+                default:
+                    $emuhash = false;
+            }
 
-				case MHASH_RIPEMD160:
-					$emuhash = openssl_hash(MHASH_RIPEMD160,$password_clear);
-					break;
+            return $emuhash;
+        }
 
-				default:
-					$emuhash = FALSE;
-			}
-
-			return $emuhash;
-		}
-
-		function mhash_keygen_s2k($hash_id,$password_clear,$salt,$bytes) {
-			return substr(pack('H*',bin2hex(mhash($hash_id,($salt.$password_clear)))),0,$bytes);
-		}
-	}
+        function mhash_keygen_s2k($hash_id, $password_clear, $salt, $bytes)
+        {
+            return substr(pack('H*', bin2hex(mhash($hash_id, ($salt . $password_clear)))), 0, $bytes);
+        }
+    }
 }
 ?>
